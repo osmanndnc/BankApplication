@@ -1,15 +1,24 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
-import SignUp from '../screens/Login/SignUp/SignUp'
+import { StyleSheet, Text, View } from "react-native";
+import React from "react";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import DrawerNavigator from "./DrawerNavigator";
+
+const Stack = createNativeStackNavigator();
 
 const UserStack = () => {
   return (
-    <View>
-    <SignUp/>
-    </View>
-  )
-}
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Stack.Screen
+        name="Drawer"
+        component={DrawerNavigator}
+        options={{ headerShown: false }}
+      />
+    </Stack.Navigator>
+  );
+};
 
-export default UserStack
-
-const styles = StyleSheet.create({})
+export default UserStack;

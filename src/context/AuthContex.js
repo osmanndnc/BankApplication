@@ -5,12 +5,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(true);     // Giriş yapmış kullanıcı bilgisi
+  const [isAuth, setUser] = useState(true);   
   
 
 
   return (
-    <AuthContext.Provider value={{ user,setUser}}>
+    <AuthContext.Provider value={{ isAuth,setUser}}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useState, useContext } from "react";
 import {
   View,
   Text,
@@ -6,40 +7,92 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
-
-const Login = (navigation) => {
+import { AuthContext } from "../../context/AuthContex";
+const Login = ({ navigation }) => {
   const [tcNo, setTcNo] = useState("");
   const [password, setPassword] = useState("");
+  const [focusedInput, setFocusedInput] = useState(null);
+  const { isAuth, setUser } = useContext(AuthContext);
+  const login = async (tcNo, password) => {
+    try {
+      const storedUsers = await AsyncStorage.getItem("users");
+      const users = storedUsers ? JSON.parse(storedUsers) : [];
 
-  const handleLogin = () => {
-    navigation.navigate()
+      const matchedUser = users.find(
+        (user) => user.tcNo === tcNo && user.password === password
+      );
+
+      if (matchedUser) {
+        alert("Giriş başarılı!");
+        setUser(true);
+        // İstersen burada kullanıcıyı oturum bilgisi olarak saklayabilirsin
+      } else {
+        alert("Giriş başarısız! TC No veya şifre yanlış.");
+      }
+    } catch (error) {
+      console.error("Giriş sırasında hata oluştu:", error);
+      alert("Bir hata oluştu. Lütfen tekrar deneyin.");
+    }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Giriş Yap</Text>
-<View style={styles.inputContainer}>
-      <TextInput
-        style={styles.input}
-        placeholder="TC Kimlik No"
-        keyboardType="numeric"
-        maxLength={11}
-        value={tcNo}
-        onChangeText={setTcNo}
-      />
+      <View style={styles.content}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Hoş Geldiniz</Text>
+          <Text style={styles.subtitle}>Hesabınıza giriş yapın</Text>
+        </View>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Şifre"
-        secureTextEntry
-        keyboardType="numeric"
-        value={password}
-        onChangeText={setPassword}
-      />
-</View>
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Giriş</Text>
-      </TouchableOpacity>
+        <View style={styles.formContainer}>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>TC Kimlik No</Text>
+            <TextInput
+              style={[
+                styles.input,
+                focusedInput === "tcNo" && styles.inputFocused,
+              ]}
+              placeholder="TC Kimlik No"
+              keyboardType="numeric"
+              maxLength={11}
+              value={tcNo}
+              onChangeText={setTcNo}
+              onFocus={() => setFocusedInput("tcNo")}
+              onBlur={() => setFocusedInput(null)}
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Şifre</Text>
+            <TextInput
+              style={[
+                styles.input,
+                focusedInput === "password" && styles.inputFocused,
+              ]}
+              placeholder="Şifre"
+              secureTextEntry
+              keyboardType="numeric"
+              value={password}
+              onChangeText={setPassword}
+              onFocus={() => setFocusedInput("password")}
+              onBlur={() => setFocusedInput(null)}
+            />
+          </View>
+
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => login(tcNo, password)}
+          >
+            <Text style={styles.buttonText}>Giriş Yap</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => navigation.navigate("SignUp")}
+          >
+            <Text style={styles.buttonText}>Kayıt Ol</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
     </View>
   );
 };
@@ -49,40 +102,91 @@ export default Login;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    backgroundColor: "#f5f7fa",
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 60,
     justifyContent: "center",
-    backgroundColor: "#ffffff",
+  },
+  header: {
+    alignItems: "center",
+    marginBottom: 40,
   },
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 30,
-    color: "#333",
+    color: "#1a365d",
+    marginBottom: 8,
   },
-  inputContainer:{
-    justifyContent:'center',
-    width:300,
+  subtitle: {
+    fontSize: 16,
+    color: "#4a5568",
+    textAlign: "center",
+  },
+  formContainer: {
+    backgroundColor: "#ffffff",
+    borderRadius: 16,
+    padding: 24,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  inputContainer: {
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#2d3748",
+    marginBottom: 8,
   },
   input: {
-    height: 50,
-    borderColor: "#ccc",
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    marginBottom: 15,
+    borderWidth: 2,
+    borderColor: "#e2e8f0",
+    backgroundColor: "#ffffff",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
     fontSize: 16,
-    backgroundColor: "#f9f9f9",
+    color: "#2d3748",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
   },
   button: {
-    backgroundColor: "#007bff",
-    paddingVertical: 15,
-    borderRadius: 8,
+    backgroundColor: "#2563eb",
+    paddingVertical: 16,
+    borderRadius: 12,
     alignItems: "center",
+    marginTop: 20,
+    shadowColor: "#2563eb",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   buttonText: {
-    color: "#fff",
+    color: "#ffffff",
     fontSize: 18,
     fontWeight: "bold",
+  },
+  inputFocused: {
+    borderColor: "#2563eb",
+    backgroundColor: "#f7fafc",
   },
 });
