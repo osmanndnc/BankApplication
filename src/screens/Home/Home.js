@@ -1,37 +1,113 @@
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from "react-native";
-import React from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  ScrollView,
+  FlatList,
+} from "react-native";
+import React, { useContext, useEffect, useState } from "react";
+import { UserContext } from "../../context/UserContext";
+import styles from "./Home.style";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const Home = ({navigation}) => {
-  // PieChart yerine basit bir tasarım ile başlayalım
-  const accounts = [
-    { name: 'Vadesiz', amount: '₺15.270,00', color: '#2563eb' },
-    { name: 'Vadeli', amount: '₺6.112,50', color: '#10b981' },
-    { name: 'Yatırım', amount: '₺4.067,50', color: '#f59e0b' }
-  ];
+const Home = ({ navigation }) => {
+  const { user } = useContext(UserContext);
+  const tcNo = user?.tcNo || null;
+  const [userAccounts, setUserAccounts] = useState([]);
+  const [totalBalance, setTotalBalance] = useState(0);
 
+  useEffect(() => {
+    getAccounts();
+  }, []);
+
+  useEffect(() => {
+    calculateTotalBalance();
+  }, [userAccounts]);
+
+  const calculateTotalBalance = () => {
+    let total = 0;
+    userAccounts.forEach((account) => {
+      if (account.selectedCurrency === "TRY") {
+        total += parseFloat(account.balance);
+      } else if (account.selectedCurrency === "AUD") {
+        total += parseFloat(account.balance) * 30;
+      } else if (account.selectedCurrency === "USD") {
+        total += parseFloat(account.balance) * 40;
+      } else if (account.selectedCurrency === "EUR") {
+        total += parseFloat(account.balance) * 50;
+      }
+    });
+    setTotalBalance(total);
+  };
+
+  const getAccounts = async () => {
+    let accounts = await AsyncStorage.getItem("accounts");
+    let parsedAccounts = accounts ? JSON.parse(accounts) : [];
+    const matchedAccounts = parsedAccounts.filter(
+      (account) => account.tcNo === tcNo
+    );
+    setUserAccounts(matchedAccounts);
+    console.log("User Accounts:", matchedAccounts);
+  };
+  const balanceIcon = (currency) => {
+    switch (currency) {
+      case "TRY":
+        return "₺";
+      case "USD":
+        return "$";
+      case "EUR":
+        return "€";
+      case "GBP":
+        return "£";
+      case "AUD":
+        return "A$";
+      default:
+        return "₺";
+    }
+  };
   return (
     <ScrollView style={styles.container}>
       <View style={styles.balanceCard}>
         <Text style={styles.balanceLabel}>Toplam Bakiye</Text>
-        <Text style={styles.balanceAmount}>₺0,00</Text>
-        <Text style={styles.balanceSubtext}>Hesap No: ****1234</Text>
+        <Text style={styles.balanceAmount}>₺{totalBalance.toFixed(2)}</Text>
       </View>
 
       <View style={styles.chartContainer}>
-        <Text style={styles.chartTitle}>Hesap Dağılımı</Text>
+        <Text style={styles.chartTitle}>Hesaplarım</Text>
         <View style={styles.accountsList}>
-          {accounts.map((account, index) => (
-            <View key={index} style={styles.accountItem}>
-              <View style={styles.accountInfo}>
-                <View style={[styles.accountColor, { backgroundColor: account.color }]} />
-                <Text style={styles.accountName}>{account.name}</Text>
+          <FlatList
+            horizontal
+            data={userAccounts}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item }) => (
+              <View style={styles.accountItem}>
+                <View style={styles.accountItemHeader}>
+                  <Text style={styles.accountName}>{item.cardName}</Text>
+                  <Text style={styles.accountBalance}>
+                    {parseFloat(item.balance).toFixed(2)}
+                    {balanceIcon(item.selectedCurrency)}
+                  </Text>
+                </View>
+                <View style={styles.accountDetails}>
+                  <Text style={styles.accountType}>{item.type}</Text>
+                  <Text style={styles.accountCurrency}>
+                    {item.selectedCurrency}
+                  </Text>
+                </View>
               </View>
-              <Text style={styles.accountAmount}>{account.amount}</Text>
-            </View>
-          ))}
+            )}
+            ListEmptyComponent={
+              <View style={styles.noAccountsContainer}>
+                <Text style={styles.noAccountsText}>
+                  Henüz hesabınız bulunmuyor
+                </Text>
+              </View>
+            }
+            showsHorizontalScrollIndicator={false}
+          />
         </View>
       </View>
-
 
       <View style={styles.actionsContainer}>
         <Text style={styles.actionsTitle}>Hızlı İşlemler</Text>
@@ -39,8 +115,10 @@ const Home = ({navigation}) => {
           <TouchableOpacity style={styles.actionButton}>
             <Text style={styles.actionButtonText}>Para Transferi</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton} onPress={() => navigation.navigate('CreateAccount')
-          }>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => navigation.navigate("CreateAccount")}
+          >
             <Text style={styles.actionButtonText}>Yeni Hesap Oluştur</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.actionButton}>
@@ -53,160 +131,3 @@ const Home = ({navigation}) => {
 };
 
 export default Home;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f5f7fa",
-    paddingHorizontal: 20,
-    paddingTop: 20,
-  },
-  balanceCard: {
-    backgroundColor: "#ffffff",
-    borderRadius: 16,
-    padding: 24,
-    marginBottom: 20,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
-    alignItems: "center",
-  },
-  balanceLabel: {
-    fontSize: 16,
-    color: "#4a5568",
-    marginBottom: 8,
-  },
-  balanceAmount: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#1a365d",
-    marginBottom: 4,
-  },
-  balanceSubtext: {
-    fontSize: 14,
-    color: "#718096",
-  },
-  chartContainer: {
-    backgroundColor: "#ffffff",
-    borderRadius: 16,
-    padding: 24,
-    marginBottom: 20,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  chartTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#1a365d",
-    marginBottom: 16,
-    textAlign: "center",
-  },
-  chartWrapper: {
-    alignItems: "center",
-  },
-  accountsList: {
-    marginTop: 10,
-  },
-  accountItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    backgroundColor: "#f8f9fa",
-    borderRadius: 8,
-    marginBottom: 8,
-  },
-  accountInfo: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  accountColor: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 12,
-  },
-  accountName: {
-    fontSize: 16,
-    color: "#2d3748",
-    fontWeight: "500",
-  },
-  accountAmount: {
-    fontSize: 16,
-    color: "#1a365d",
-    fontWeight: "bold",
-  },
-  legend: {
-    marginTop: 20,
-    alignItems: "flex-start",
-  },
-  legendItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  legendColor: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    marginRight: 8,
-  },
-  legendText: {
-    fontSize: 14,
-    color: "#4a5568",
-  },
-  actionsContainer: {
-    backgroundColor: "#ffffff",
-    borderRadius: 16,
-    padding: 24,
-    marginBottom: 20,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  actionsTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#1a365d",
-    marginBottom: 16,
-  },
-  actionButtons: {
-    gap: 12,
-  },
-  actionButton: {
-    backgroundColor: "#2563eb",
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: "center",
-    shadowColor: "#2563eb",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  actionButtonText: {
-    color: "#ffffff",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-});

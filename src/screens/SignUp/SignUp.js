@@ -6,9 +6,11 @@ import {
   TouchableOpacity,
   Button,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { UserContext } from "../../context/UserContext";
+import { AuthContext } from "../../context/AuthContex";
 
 const SignUp = ({ navigation }) => {
   const [tcNo, SetTcNo] = useState("");
@@ -17,6 +19,8 @@ const SignUp = ({ navigation }) => {
   const [birthday, setBirthday] = useState(new Date());
   const [password, setPassword] = useState("");
   const [focusedInput, setFocusedInput] = useState(null);
+  const { setUser } = useContext(UserContext);
+  const { setAuth } = useContext(AuthContext);
 
   const showDatePicker = () => {
     DateTimePickerAndroid.open({
@@ -48,8 +52,14 @@ const SignUp = ({ navigation }) => {
     const users = storedUsers ? JSON.parse(storedUsers) : [];
     users.push(newUser);
     await AsyncStorage.setItem("users", JSON.stringify(users));
-        alert("Kullanıcı başarıyla kaydedildi!");
-    navigation.navigate("Login");
+    
+    // UserContext'e de kaydet
+    setUser(newUser);
+    
+    // isAuth'u true yap, otomatik Home'a geçecek
+    setAuth(true);
+    
+    alert("Kullanıcı başarıyla kaydedildi!");
 
    
   } catch (error) {

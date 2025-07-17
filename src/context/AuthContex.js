@@ -1,16 +1,15 @@
 import React, { createContext, useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// 1. Context oluştur
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [isAuth, setUser] = useState(true);   
+  const [isAuth, setAuth] = useState(false);   
   
 
 
   return (
-    <AuthContext.Provider value={{ isAuth,setUser}}>
+    <AuthContext.Provider value={{ isAuth,setAuth}}>
       {children}
     </AuthContext.Provider>
   );

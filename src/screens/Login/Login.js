@@ -8,24 +8,25 @@ import {
   StyleSheet,
 } from "react-native";
 import { AuthContext } from "../../context/AuthContex";
+import { UserContext } from "../../context/UserContext";
 const Login = ({ navigation }) => {
   const [tcNo, setTcNo] = useState("");
   const [password, setPassword] = useState("");
   const [focusedInput, setFocusedInput] = useState(null);
-  const { isAuth, setUser } = useContext(AuthContext);
+  const { user, setUser } = useContext(UserContext);
+  const { setAuth } = useContext(AuthContext);
+
   const login = async (tcNo, password) => {
     try {
       const storedUsers = await AsyncStorage.getItem("users");
       const users = storedUsers ? JSON.parse(storedUsers) : [];
-
       const matchedUser = users.find(
         (user) => user.tcNo === tcNo && user.password === password
       );
 
       if (matchedUser) {
-        alert("Giriş başarılı!");
-        setUser(true);
-        // İstersen burada kullanıcıyı oturum bilgisi olarak saklayabilirsin
+        setUser(matchedUser);
+        setAuth(true); 
       } else {
         alert("Giriş başarısız! TC No veya şifre yanlış.");
       }

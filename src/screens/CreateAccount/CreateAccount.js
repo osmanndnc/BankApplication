@@ -3,17 +3,19 @@ import React, { useContext, useState } from "react";
 import { StepContext } from "../../context/StepContext";
 import { Picker } from "@react-native-picker/picker";
 import TextPicker from "../../components/TextPicker/TextPicker";
+import { UserContext } from "../../context/UserContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const CreateAccount = () => {
-  const { step, setStep } = useContext(StepContext);
-  const [type, setType] = useState("deposit account");
+const CreateAccount = ({navigation}) => {
+  const { user } = useContext(UserContext);
+  
+  const tcNo = user ? user.tcNo : null;
+  
+  const [type, setType] = useState("Vadeli Hesap");
   const [selectedCurrency, setCurrency] = useState("AUD");
   const [selectedBranch, setBranch] = useState("6800 KILICASLAN/AKS");
   const [cardName, setName] = useState("");
-  const [visible, setVisible] = useState(false);
   const [newAccount, setNewAcc] = useState(null);
-  const [alertVisible, setAlertVisible] = useState(false);
-  const [message, setMessage] = useState("");
 
   const accountTypes = [
     { label: "Vadesiz Hesap", value: "Vadesiz Hesap" },
@@ -29,6 +31,34 @@ const CreateAccount = () => {
     { label: "6800 KILICASLAN/AKS", value: "6800 KILICASLAN/AKS" },
     { label: "6801 KILICASLAN/AKS", value: "6801 KILICASLAN/AKS" },
   ];
+
+   const randomNumber = (min, max) => {
+        return parseFloat(Math.floor(Math.random() * (max - min + 1)) + min);
+    }
+
+
+  const handleCreateAccount = async () => {
+    const accounts = await AsyncStorage.getItem("accounts");
+    let parsedAccounts = accounts ? JSON.parse(accounts) : [];
+    if (!cardName) { 
+      alert("Lütfen hesap ismini giriniz.");
+      return;
+    }
+    const newAccount = {
+      tcNo: tcNo,
+      type: type,
+      selectedCurrency: selectedCurrency,
+      selectedBranch: selectedBranch,
+      cardName: cardName,
+      balance: randomNumber(1000, 10000).toFixed(2),
+    };
+    setNewAcc(newAccount);
+    alert("Hesap başarıyla oluşturuldu.");
+    parsedAccounts.push(newAccount);
+    await AsyncStorage.setItem("accounts", JSON.stringify(parsedAccounts));
+    navigation.navigate("Drawer");
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.card}>
@@ -73,7 +103,7 @@ const CreateAccount = () => {
         selectedValue={selectedBranch}
         setselectedValue={setBranch}
         DataTypes={branchTypes}/>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => handleCreateAccount()}>
           <Text style={styles.button}>Hesap Oluştur</Text>
         </TouchableOpacity>
     </View>
