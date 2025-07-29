@@ -52,11 +52,10 @@ const SignUp = ({ navigation }) => {
     const users = storedUsers ? JSON.parse(storedUsers) : [];
     users.push(newUser);
     await AsyncStorage.setItem("users", JSON.stringify(users));
-    
-    // UserContext'e de kaydet
+
     setUser(newUser);
     
-    // isAuth'u true yap, otomatik Home'a geçecek
+    
     setAuth(true);
     
     alert("Kullanıcı başarıyla kaydedildi!");

@@ -2,7 +2,6 @@ import { StyleSheet, Text, View } from "react-native";
 import React from "react";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import Home from "../screens/Home/Home";
-import MyAccounts from "../screens/MyAccounts/MyAccounts";
 import WatchList from "../screens/WatchList/WatchList";
 const Drawer = createDrawerNavigator();
 const DrawerNavigator = () => {
@@ -24,13 +23,6 @@ const DrawerNavigator = () => {
         component={Home} 
         options={{
           title: 'Ana Sayfa',
-        }}
-      />
-       <Drawer.Screen 
-        name="MyAccounts" 
-        component={MyAccounts} 
-        options={{
-          title: 'Hesaplarım',
         }}
       />
        <Drawer.Screen 

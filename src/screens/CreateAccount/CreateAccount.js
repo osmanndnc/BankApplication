@@ -12,7 +12,7 @@ const CreateAccount = ({navigation}) => {
   const tcNo = user ? user.tcNo : null;
   
   const [type, setType] = useState("Vadeli Hesap");
-  const [selectedCurrency, setCurrency] = useState("AUD");
+  const [selectedCurrency, setCurrency] = useState("TRY");
   const [selectedBranch, setBranch] = useState("6800 KILICASLAN/AKS");
   const [cardName, setName] = useState("");
   const [newAccount, setNewAcc] = useState(null);
@@ -37,6 +37,11 @@ const CreateAccount = ({navigation}) => {
     }
 
 
+    const getIban = () => {
+      let iban = "TR";
+      iban += randomNumber(1000000000, 9999999999).toString();
+      return iban;
+    };
   const handleCreateAccount = async () => {
     const accounts = await AsyncStorage.getItem("accounts");
     let parsedAccounts = accounts ? JSON.parse(accounts) : [];
@@ -51,6 +56,7 @@ const CreateAccount = ({navigation}) => {
       selectedBranch: selectedBranch,
       cardName: cardName,
       balance: randomNumber(1000, 10000).toFixed(2),
+      iban: getIban(),
     };
     setNewAcc(newAccount);
     alert("Hesap başarıyla oluşturuldu.");
@@ -103,7 +109,7 @@ const CreateAccount = ({navigation}) => {
         selectedValue={selectedBranch}
         setselectedValue={setBranch}
         DataTypes={branchTypes}/>
-        <TouchableOpacity onPress={() => handleCreateAccount()}>
+        <TouchableOpacity style={styles.buttonContainer} onPress={() => handleCreateAccount()}>
           <Text style={styles.button}>Hesap Oluştur</Text>
         </TouchableOpacity>
     </View>
@@ -162,17 +168,19 @@ const styles = StyleSheet.create({
     marginTop: 5,
     alignItems: "center",
   },
-  button: {backgroundColor: "#2563eb",
+  buttonContainer: {
+    backgroundColor: "#2563eb",
     paddingVertical: 16,
+    paddingHorizontal: 32,
     borderRadius: 12,
-    textAlign: "center",
     alignItems: "center",
     justifyContent: "center",
-    color: "white",
-    marginTop:20,
+    marginTop: 20,
     shadowColor: "#2563eb",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1, 
+    shadowOpacity: 0.1,
+  },
+  button: {
     color: "#ffffff",
     fontSize: 16,
     fontWeight: "bold",

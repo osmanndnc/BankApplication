@@ -10,15 +10,18 @@ import React, { useContext, useEffect, useState } from "react";
 import { UserContext } from "../../context/UserContext";
 import styles from "./Home.style";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Loading from "../../components/LoadingUI/Loading";
 
 const Home = ({ navigation }) => {
   const { user } = useContext(UserContext);
   const tcNo = user?.tcNo || null;
   const [userAccounts, setUserAccounts] = useState([]);
   const [totalBalance, setTotalBalance] = useState(0);
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     getAccounts();
+    
   }, []);
 
   useEffect(() => {
@@ -112,12 +115,12 @@ const Home = ({ navigation }) => {
       <View style={styles.actionsContainer}>
         <Text style={styles.actionsTitle}>Hızlı İşlemler</Text>
         <View style={styles.actionButtons}>
-          <TouchableOpacity style={styles.actionButton}>
+          <TouchableOpacity style={styles.actionButton} onPress={(() => navigation.navigate("MoneyTransfer")  )}>
             <Text style={styles.actionButtonText}>Para Transferi</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.actionButton}
-            onPress={() => navigation.navigate("CreateAccount")}
+            onPress={() => {navigation.navigate("CreateAccount")}}
           >
             <Text style={styles.actionButtonText}>Yeni Hesap Oluştur</Text>
           </TouchableOpacity>
@@ -126,6 +129,9 @@ const Home = ({ navigation }) => {
           </TouchableOpacity>
         </View>
       </View>
+      {isLoading && 
+      <Loading/>
+      }
     </ScrollView>
   );
 };
