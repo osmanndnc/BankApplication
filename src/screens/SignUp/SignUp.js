@@ -45,6 +45,7 @@ const SignUp = ({ navigation }) => {
     tcNo: tcNo,
     birthDate: birthday.toString().substring(0, 16),
     password: password,
+    whachList : [],
   };
 
   try {

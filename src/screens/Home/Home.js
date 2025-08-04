@@ -11,6 +11,7 @@ import { UserContext } from "../../context/UserContext";
 import styles from "./Home.style";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Loading from "../../components/LoadingUI/Loading";
+import io from "socket.io-client";
 
 const Home = ({ navigation }) => {
   const { user } = useContext(UserContext);
@@ -19,6 +20,7 @@ const Home = ({ navigation }) => {
   const [totalBalance, setTotalBalance] = useState(0);
   const [isLoading, setIsLoading] = useState(false)
 
+  
   useEffect(() => {
     getAccounts();
     
@@ -27,6 +29,7 @@ const Home = ({ navigation }) => {
   useEffect(() => {
     calculateTotalBalance();
   }, [userAccounts]);
+
 
   const calculateTotalBalance = () => {
     let total = 0;

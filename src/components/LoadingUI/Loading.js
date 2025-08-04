@@ -3,7 +3,6 @@ import { View, Animated, StyleSheet } from "react-native";
 
 const Bubble = ({ delay }) => {
   const scaleAnim = useRef(new Animated.Value(0)).current;
-//????????
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
